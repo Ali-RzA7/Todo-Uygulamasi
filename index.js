@@ -13,6 +13,8 @@ function runEvents(){
   form.addEventListener("submit",addTodo);
   document.addEventListener("DOMContentLoaded",pageLoaded);
   secondcardBody.addEventListener("click",removeTodoUI);
+  secondcardBody.addEventListener("click",setTodoUI);
+  secondcardBody.addEventListener("click",completedTodo);
   clearButton.addEventListener("click",allTodoRemoved);
   filterInput.addEventListener("keyup",filter);
 }
@@ -75,13 +77,13 @@ function pageLoaded(){
 }
 
 function removeTodoUI(e){
-  if (e.target.className==="delete-item btn btn-danger"){
+  if (e.target.className==="delete-item btn btn-danger mr-2"){
     // Arayüzden silme
-    const todo = e.target.parentElement;
+    const todo = e.target.parentNode.parentNode;
     todo.remove();
     showAlert("success","Todo başarıyla silindi...");
     // Storage'dan Silme
-    removeTodoToStorage(todo.textContent.slice(0,-3));
+    removeTodoToStorage(todo.textContent.slice(0,-10));
   
   }
 
@@ -101,9 +103,34 @@ function removeTodoToStorage(removeTodo){
   localStorage.setItem("todos",JSON.stringify(todos));
 }
 
+function completedTodo(e){
+  if (e.target.className != "set-item btn btn-primary mr-3" || e.target.className != "delete-item btn btn-danger mr-2"){
+    if (window.getComputedStyle(e.target).textDecoration === "line-through") {
+      e.target.style.textDecoration = "";
+    }   else {
+      e.target.style.textDecoration = "line-through";
+    }
+  }
+}
 
 
 
+function setTodoUI(e){
+    checkTodosFromStorage();
+    if (e.target.className === "set-item btn btn-primary mr-3"){
+      let newTodo = prompt("-------------Yeni Todo-------------");
+      if (newTodo.length > 0){
+      let setTodo = e.target.parentNode.parentNode.textContent.slice(0,-10);
+      const todo = e.target.parentNode.parentNode;
+      todo.remove();
+      removeTodoToStorage(setTodo);
+      addTodoToUI(newTodo);
+      addTodoToStorage(newTodo);
+      }else{
+        showAlert("warning","Todo boş olamaz...")
+      };
+    }
+  }
 
 
 function addTodo(e){
@@ -128,21 +155,31 @@ function addTodo(e){
 
 
 function addTodoToUI(newtodo){
-const li = document.createElement("li");
-li.className="list-group-item d-flex justify-content-between";
-li.textContent = newtodo;
+  const li = document.createElement("li");
+  li.className="list-group-item d-flex justify-content-between";
+  li.textContent = newtodo;
+  
+  const div = document.createElement("div");
+  
+  
+  const a = document.createElement("a");
+  a.className="delete-item btn btn-danger mr-2";
+  a.textContent = "Sil";
+  a.href = "#";
+  
+  const b = document.createElement("a");
+  b.className="set-item btn btn-primary mr-3";
+  b.textContent = "Düzenle";
+  b.href = "#";
+  
+  div.appendChild(a);
+  div.appendChild(b);
+  li.appendChild(div);
+  todoList.appendChild(li);
+  
+  addInput.value = "";
+  }
 
-const a = document.createElement("a");
-a.className="delete-item btn btn-danger";
-a.textContent = "Sil";
-a.href = "#";
-
-
-li.appendChild(a);
-todoList.appendChild(li);
-
-addInput.value = "";
-}
 
 function addTodoToStorage(newtodo){
   checkTodosFromStorage();
